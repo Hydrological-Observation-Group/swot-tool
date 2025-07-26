@@ -16,12 +16,25 @@ def IQR_filter(arr):
   arr_masked = np.ma.masked_where(np.logical_or(arr>wse_high_thre, arr<wse_low_thre), arr)
   return arr_masked, IQR
 
+def iter_IQR(arr, IQR_thre, iter_max):
+  iter = 0
+  arr_IQR, IQR = IQR_filter(arr)
+  while IQR > IQR_thre and iter < iter_max:    
+      iter += 1
+      arr_IQR_mask = arr_IQR.mask
+      arr_IQR, IQR = IQR_filter(arr_IQR.filled(np.nan))
+      arr_IQR.mask = arr_IQR.mask | arr_IQR_mask
+  return arr_IQR, IQR
 
-def toslant(pixc, key='height'):
+
+def pixc_to_slant_raster(pixc, key='height'):
+    '''
+     des: convert the swot pixel data to slant range format.
+    '''
     az = pixc.azimuth_index.astype(int)
     rng = pixc.range_index.astype(int)
     out_arr = np.zeros((pixc.interferogram_size_azimuth + 1, \
-                    pixc.interferogram_size_range + 1)) + np.nan
+                        pixc.interferogram_size_range + 1)) + np.nan
     # handle complex interferogram
     if key=='interferogram':
         out_arr = out_arr.astype('complex64')
@@ -33,14 +46,15 @@ def toslant(pixc, key='height'):
 
 def pixc_geophy_cor(pixc_nc):
     """geophysical corrections for the height data.
-       ! no inverse barometric correction.
+       by following the swot l2 hr pixc document, only solid earth tide, 
+          pole tide, and load tide are not corrected for the height.
     """
     height = pixc_nc.height.values
     solid_tide = pixc_nc.solid_earth_tide.values
     pole_tide = pixc_nc.pole_tide.values
     load_tide = pixc_nc.load_tide_fes.values
-    iono_corr = pixc_nc.iono_cor_gim_ka.values
-    return height - (solid_tide + pole_tide + load_tide + iono_corr)    
+
+    return height - (solid_tide + pole_tide + load_tide)    
 
 def swot_raster_reproj(raster_nc, epsg_from, epsg_to):
     '''

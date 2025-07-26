@@ -1,7 +1,7 @@
 ### ----- 
 # author: luo xin, 
 # creat: 2022.9.25, modify: 2025.7.21
-# des: Time formats conversions. year-month-day-hour, day-of-year, decimal year.
+# des: Time formats conversions. year-month-day, day-of-year, decimal year.
 # -----
 
 '''ref: https://www.cnblogs.com/maoerbao/p/11518831.html
@@ -36,14 +36,14 @@ def date2doy(year, month, day, hour=0, minute=0):
 
 def doy2date(year, doy):
     '''
-    des: convert doy(day-of-year) to year-month-day-hour-minute formate 
+    des: convert doy(day-of-year) to specific month and day. 
     the function returns the month and the day of the month. 
     args:
         year
         doy: day of the year
     return:
-        month
-        day    
+        month, day    
+    e.g., doy2date(2020, 60) -> (3, 1)
     '''
     month_leapyear=[31,29,31,30,31,30,31,31,30,31,30,31]
     month_notleap= [31,28,31,30,31,30,31,31,30,31,30,31]
@@ -101,8 +101,6 @@ def dyr_to_dt64(decimal_year):
     delta = timedelta(seconds=total_seconds)
     result_date = start_date + delta
     return result_date.strftime("%Y-%m-%dT%H:%M:%S")
-
-
 
 ### convert time (second format) to decimal year
 def second_to_dyr(time_second, time_start='2000-01-01 00:00:00.0'):
